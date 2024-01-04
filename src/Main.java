@@ -1,37 +1,42 @@
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
+import javax.swing.Timer;
 
 public class Main extends JFrame  {
 
 
     public static void main(String[] args) {
 
-        JPanel tastatura = new JPanel();
+        /// C U L O R I
+        Color camel = new Color(193, 154, 107);
+        Color champagneColor = new Color(247, 231, 206);
+        Color almond = new Color(230, 221, 216);
+        Color cf = new Color(166, 123, 91);
+
+
+
+        // P A N E L U R I
+        JPanel tastatura = new JPanel();        //// TASTE 0-9; ENTER
         tastatura.setBounds(0, 0, 500, 500);
         tastatura.setLayout(new GridLayout(4, 3, 3, 3));
-        Color champagneColor = new Color(247, 231, 206);
         tastatura.setBackground(champagneColor);
 
-        for (int i = 9; i >= 0; i--) {
-            JButton button = new JButton(Integer.toString(i));
-            button.setFocusable(false);
-            int finalI = i;
-            button.addActionListener(e -> System.out.printf("A fost apasata tasta %d\n", finalI));
-            tastatura.add(button);
-        }
 
-        JButton Enterbutton = new JButton();
-        Enterbutton.setText("ENTER");
-        Enterbutton.setFocusable(false);
-        Enterbutton.addActionListener(e -> System.out.println("A fost apasata tasta  enter"));
-        tastatura.add(Enterbutton);
-
-
-        JPanel display = new JPanel();
+        JPanel display = new JPanel(); //// IN CARE SE AFISEAZA MESAJE
         display.setBounds(500, 0, 500, 500);
-        Color camel = new Color(193, 154, 107);
         display.setBackground(camel);
+
+
+        JPanel ActionButton = new JPanel(); // START/STOP ; INTERVAL ; POUR FOOD
+        ActionButton.setBounds(0, 500, 500, 500);
+        ActionButton.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 35));
+        ActionButton.setBackground(cf);
+
+
+        JPanel processor = new JPanel(); //// PENTRU SWITCH
+        processor.setBounds(50, 10, 500, 500);
+        processor.setBackground(almond);
 
 
         /// trebuie facut la mijloc; nu inteleg de ce nuu merge??
@@ -44,13 +49,27 @@ public class Main extends JFrame  {
         label.setHorizontalAlignment(0);
         display.add(label);
 
+        StringBuilder inputStringBuilder = new StringBuilder();
 
-        JPanel ActionButton = new JPanel();
-        ActionButton.setBounds(0, 500, 500, 500);
-        ActionButton.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 35));
-        Color cf = new Color(166, 123, 91);
-        ActionButton.setBackground(cf);
+        //  B U T O A N E 0-9
+        for (int i = 9; i >= 0; i--) {
+            JButton button = new JButton(Integer.toString(i));
+            button.setFocusable(false);
+            int finalI = i;
+            button.addActionListener(e -> {
+                inputStringBuilder.append(finalI);
+                label.setText(inputStringBuilder.toString());
+            });
+            tastatura.add(button);
+        }
 
+        /// E N T E R
+        JButton Enterbutton = new JButton();
+        Enterbutton.setText("ENTER");
+        Enterbutton.setFocusable(false);
+        tastatura.add(Enterbutton);
+
+        ////// CREARE "MENIU"
         JButton START = new JButton();
         START.setText("START/STOP");
         START.setFocusable(false);
@@ -71,6 +90,14 @@ public class Main extends JFrame  {
 
         final boolean[] isStarted = {false}; // pt start/stop
 
+        //// F R A M E
+        JFrame frame = new JFrame();
+        frame.setTitle("Pet Feeder Processor");
+        frame.setDefaultCloseOperation(EXIT_ON_CLOSE);
+        frame.setSize(1000, 1000);
+        frame.setLocationRelativeTo(null);
+        frame.setVisible(true);
+
 
         ////trb schimbat astfel incat pour si interval sa fie folosite doar cand sunt in starea de start
         ActionListener buttonActionListener = e -> {
@@ -78,34 +105,52 @@ public class Main extends JFrame  {
                 if (!isStarted[0]) {
                     label.setText("HELLO WORLD");
                     isStarted[0] = true;
-                }
-                else {
+                } else {
                     label.setText("Shutting down...");
                     isStarted[0] = false;
+                    frame.dispose();
+                   // inputStringBuilder = "";   --- cum fac sa mearga?????
                 }
             } else if (e.getSource() == POUR) {
                 label.setText("POURING FOOD....");
-            } else if (e.getSource() == INTERVAL) { // cv de afisare a tastelor pana se apasa ENTER
+                POUR.setEnabled(false);
+                Timer timer = new Timer(5000, timerEvent -> {
+                    label.setText("Animal has been fed");
+                });
+                timer.setRepeats(false);
+                timer.start();
+
+            } else if (e.getSource() == INTERVAL) {
                 label.setText("SET INTERVAL: ");
+
+                ActionListener buttonActionListener2 = e2 -> { // PENTRU APASAREA ALTOR TASTE
+
+                    if (e2.getSource() == Enterbutton) {
+                        label.setText("Your pet will be fed every " + inputStringBuilder + " minutes" );
+                    } else {
+                        char keyPressed = ((JButton) e2.getSource()).getText().charAt(0);
+                        inputStringBuilder.append(keyPressed);
+                        label.setText("SET INTERVAL: " + inputStringBuilder  );
+
+                    }
+                };
+
+                Enterbutton.addActionListener(buttonActionListener2);
             }
         };
 
 
-        JPanel processor = new JPanel();
-        processor.setBounds(50, 10, 500, 500);
-        Color almond = new Color(230, 221, 216);
-        processor.setBackground(almond);
-
+        //// ADAUGARE ELEMENTE PENTRU DISPLAY
         START.addActionListener(buttonActionListener);
         POUR.addActionListener(buttonActionListener);
         INTERVAL.addActionListener(buttonActionListener);
+        Enterbutton.addActionListener(buttonActionListener);
 
-        JFrame frame = new JFrame();
-        frame.setTitle("Pet Feeder Processor");
-        frame.setDefaultCloseOperation(EXIT_ON_CLOSE);
-        frame.setSize(1000, 1000);
-        frame.setLocationRelativeTo(null);
-        frame.setVisible(true);
+
+
+
+
+        //ADAUGARE PANELURI LA FRAME
         frame.add(tastatura);
         frame.add(display);
         frame.add(ActionButton);

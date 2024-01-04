@@ -6,6 +6,7 @@ import javax.swing.Timer;
 public class Main extends JFrame  {
 
 
+
     public static void main(String[] args) {
 
         /// C U L O R I
@@ -17,26 +18,26 @@ public class Main extends JFrame  {
 
 
         // P A N E L U R I
-        JPanel tastatura = new JPanel();        //// TASTE 0-9; ENTER
-        tastatura.setBounds(0, 0, 500, 500);
+
+        JPanel display = new JPanel(); //// IN CARE SE AFISEAZA MESAJE
+        display.setBounds(0, 0, 500, 500);
+        display.setBackground(camel);
+
+        JPanel pipeline = new JPanel(new BorderLayout()); //// PENTRU SWITCH
+        pipeline.setBounds(500, 0, 500, 500);
+        pipeline.setBackground(cf);
+
+
+        JPanel ActionButton = new JPanel(new BorderLayout()); // START/STOP ; INTERVAL ; POUR FOOD
+        ActionButton.setBounds(500, 500, 500, 500);
+        ActionButton.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 35));
+        ActionButton.setBackground(almond);
+
+        JPanel tastatura = new JPanel(new BorderLayout());        //// TASTE 0-9; ENTER
+        tastatura.setBounds(0, 500, 500, 500);
         tastatura.setLayout(new GridLayout(4, 3, 3, 3));
         tastatura.setBackground(champagneColor);
 
-
-        JPanel display = new JPanel(); //// IN CARE SE AFISEAZA MESAJE
-        display.setBounds(500, 0, 500, 500);
-        display.setBackground(camel);
-
-
-        JPanel ActionButton = new JPanel(); // START/STOP ; INTERVAL ; POUR FOOD
-        ActionButton.setBounds(0, 500, 500, 500);
-        ActionButton.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 35));
-        ActionButton.setBackground(cf);
-
-
-        JPanel processor = new JPanel(); //// PENTRU SWITCH
-        processor.setBounds(50, 10, 500, 500);
-        processor.setBackground(almond);
 
 
         /// trebuie facut la mijloc; nu inteleg de ce nuu merge??
@@ -49,6 +50,7 @@ public class Main extends JFrame  {
         label.setHorizontalAlignment(0);
         display.add(label);
 
+        final boolean[] isStarted = {false}; // pt start/stop
         StringBuilder inputStringBuilder = new StringBuilder();
 
         //  B U T O A N E 0-9
@@ -88,7 +90,7 @@ public class Main extends JFrame  {
         INTERVAL.setPreferredSize(new Dimension(300, 100));
         ActionButton.add(INTERVAL);
 
-        final boolean[] isStarted = {false}; // pt start/stop
+
 
         //// F R A M E
         JFrame frame = new JFrame();
@@ -97,6 +99,8 @@ public class Main extends JFrame  {
         frame.setSize(1000, 1000);
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
+
+
 
 
         ////trb schimbat astfel incat pour si interval sa fie folosite doar cand sunt in starea de start
@@ -109,33 +113,29 @@ public class Main extends JFrame  {
                     label.setText("Shutting down...");
                     isStarted[0] = false;
                     frame.dispose();
-                   // inputStringBuilder = "";   --- cum fac sa mearga?????
+                    // inputStringBuilder = "";   --- cum fac sa mearga?????
                 }
-            } else if (e.getSource() == POUR) {
-                label.setText("POURING FOOD....");
-                POUR.setEnabled(false);
-                Timer timer = new Timer(5000, timerEvent -> {
-                    label.setText("Animal has been fed");
-                });
-                timer.setRepeats(false);
-                timer.start();
+            } else if (isStarted[0]) {  // Adaugă condiția pentru a verifica dacă sistemul este pornit
+                if (e.getSource() == POUR) {
+                    label.setText("POURING FOOD....");
+                    POUR.setEnabled(false);
+                    Timer timer = new Timer(5000, timerEvent -> label.setText("Your pet has been fed"));
+                    timer.setRepeats(false);
+                    timer.start();
+                } else if (e.getSource() == INTERVAL) {
+                    label.setText("SET INTERVAL: ");
+                    ActionListener buttonActionListener2 = e2 -> { // PENTRU APASAREA ALTOR TASTE
+                        if (e2.getSource() == Enterbutton) {
+                            label.setText("Your pet will be fed every " + inputStringBuilder + " minutes" );
+                        } else {
+                            char keyPressed = ((JButton) e2.getSource()).getText().charAt(0);
+                            inputStringBuilder.append(keyPressed);
+                            label.setText("SET INTERVAL: " + inputStringBuilder  );
+                        }
+                    };
 
-            } else if (e.getSource() == INTERVAL) {
-                label.setText("SET INTERVAL: ");
-
-                ActionListener buttonActionListener2 = e2 -> { // PENTRU APASAREA ALTOR TASTE
-
-                    if (e2.getSource() == Enterbutton) {
-                        label.setText("Your pet will be fed every " + inputStringBuilder + " minutes" );
-                    } else {
-                        char keyPressed = ((JButton) e2.getSource()).getText().charAt(0);
-                        inputStringBuilder.append(keyPressed);
-                        label.setText("SET INTERVAL: " + inputStringBuilder  );
-
-                    }
-                };
-
-                Enterbutton.addActionListener(buttonActionListener2);
+                    Enterbutton.addActionListener(buttonActionListener2);
+                }
             }
         };
 
@@ -154,8 +154,8 @@ public class Main extends JFrame  {
         frame.add(tastatura);
         frame.add(display);
         frame.add(ActionButton);
-        frame.add(processor);
+        frame.add(pipeline);
 
     }
 
-    }
+}
